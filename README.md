@@ -275,7 +275,30 @@ This allows more integrated authentication scenarios, using a reverse-proxy. The
 - mod_cas, to authenticate against a CAS server
 - Shibboleth SP, to authenticate against a SAML IdP
 
-The external authentication mode is exclusive from all others authentication mode, and is activated through the **authenticationMode** param:
+The external authentication mode is exclusive from all others authentication mode, and is activated through the **authenticationMode** parameter.
+
+**Sample config with Shibboleth and httpd, in front of Tomcat:**
+
+```
+<Location /bastillion>
+  # Tomcat listens on localhost:8080
+  ProxyPass http://127.0.0.1:8080/bastillion
+  ProxyPass http://127.0.0.1:8080/bastillion
+
+  # Let Shibboleth SP manage authentication
+  AuthType shibboleth
+  ShibRequestSetting applicationId default
+  ShibRequestSetting requireSession 1
+  ShibUseHeaders On
+  Require shib-session
+</Location>
+
+<LocationMatch "/bastillion/admin/(terms.*)">
+  # Proxy to ws:// because no TLS on tcp/8080
+  ProxyPass ws://127.0.0.1:8080/bastillion/admin/$1
+  ProxyPassReverse ws://127.0.0.1:8080/bastillion/admin/$1
+</LocationMatch>
+```
 
 Auditing
 ------
